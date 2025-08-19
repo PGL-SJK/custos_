@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Custos Marítimos - Gestão de Embarques</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <i class="fas fa-ship"></i>
+                <h1>Sistema de Custos Marítimos - Gestão de Embarques</h1>
+                <span class="route-badge">Portugal para Brasil | Projeto Embraer</span>
+            </div>
+            <div class="header-right">
+                <button class="btn-config" title="Configurações">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="status-item status-connected">
+            <i class="fas fa-link"></i>
+            <span>Google Sheets Conectado</span>
+        </div>
+        <div class="status-item">
+            <i class="fas fa-database"></i>
+            <span id="local-records">0 registros locais</span>
+        </div>
+        <div class="status-item">
+            <i class="fas fa-sync-alt"></i>
+            <span id="last-sync">Última sync: Nunca</span>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-database"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="total-records">0</h3>
+                    <p>Total de Registros</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-tags"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="total-categories">0</h3>
+                    <p>Categorias</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-euro-sign"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="records-with-values">0</h3>
+                    <p>Com Valores</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-chart-pie"></i>
+                </div>
+                <div class="stat-content">
+                    <h3 id="completion-rate">0%</h3>
+                    <p>Taxa Completude</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search and Actions -->
+        <div class="search-actions">
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="search-input" placeholder="Buscar por serviço, categoria ou valor...">
+            </div>
+            <div class="action-buttons">
+                <button class="btn btn-primary" id="btn-novo-embarque">
+                    <i class="fas fa-plus"></i>
+                    Novo Embarque
+                </button>
+                <button class="btn btn-secondary" id="btn-importar">
+                    <i class="fas fa-download"></i>
+                    Importar do Sheets
+                </button>
+                <button class="btn btn-secondary" id="btn-exportar-excel">
+                    <i class="fas fa-file-excel"></i>
+                    Exportar Excel
+                </button>
+                <button class="btn btn-secondary" id="btn-exportar-csv">
+                    <i class="fas fa-file-csv"></i>
+                    Exportar CSV
+                </button>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <select id="filter-category" class="filter-select">
+                <option value="">Todas as Categorias</option>
+            </select>
+            <select id="filter-status" class="filter-select">
+                <option value="">Todos os Status</option>
+                <option value="ativo">Ativo</option>
+                <option value="inativo">Inativo</option>
+                <option value="pendente">Pendente</option>
+            </select>
+        </div>
+
+        <!-- Data Table -->
+        <div class="table-container">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Categoria</th>
+                        <th>Serviço</th>
+                        <th>Valor Principal</th>
+                        <th>Detalhes</th>
+                        <th>Observações</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <tr class="loading-row">
+                        <td colspan="6" class="loading-cell">
+                            <div class="loading-spinner">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <span>Carregando dados...</span>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Novo Embarque -->
+    <div id="modal-novo-embarque" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Novo Embarque</h2>
+                <span class="close" id="close-modal">&times;</span>
+            </div>
+            <form id="form-novo-embarque" class="modal-body">
+                <div class="form-group">
+                    <label for="categoria">Categoria:</label>
+                    <select id="categoria" name="categoria" required>
+                        <option value="">Selecione uma categoria</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="servico">Serviço:</label>
+                    <input type="text" id="servico" name="servico" required>
+                </div>
+                <div class="form-group">
+                    <label for="valor">Valor Principal (€):</label>
+                    <input type="number" id="valor" name="valor" step="0.01" min="0">
+                </div>
+                <div class="form-group">
+                    <label for="detalhes">Detalhes:</label>
+                    <textarea id="detalhes" name="detalhes" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="observacoes">Observações:</label>
+                    <textarea id="observacoes" name="observacoes" rows="2"></textarea>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancel-form">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Embarque</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
