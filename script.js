@@ -184,20 +184,27 @@ function showLoading() {
         </tr>`;
 }
 
+
 // Modal functions
 function openModal() {
     const modal = document.getElementById('modal-novo-embarque');
     modal.style.display = 'block';
-    // Popula o select de categorias
-    const categoriaSelect = document.getElementById('categoria');
-    categoriaSelect.innerHTML = '<option value="">Selecione uma categoria</option>';
+    
+    // INÍCIO DA MUDANÇA: Popula o datalist de categorias
+    const datalist = document.getElementById('categorias-list');
+    datalist.innerHTML = ''; // Limpa as opções existentes
     categories.forEach(category => {
         const option = document.createElement('option');
         option.value = category;
-        option.textContent = category;
-        categoriaSelect.appendChild(option);
+        datalist.appendChild(option);
     });
+    // FIM DA MUDANÇA
 }
+
+
+
+
+
 
 function closeModal() {
     const modal = document.getElementById('modal-novo-embarque');
